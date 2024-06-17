@@ -4,6 +4,9 @@ export class Movie {
   category: string;
   releaseYear: number;
 
+  rateAverage: number;
+  voteCount: number;
+
   constructor(
     id: number,
     title: string,
@@ -14,5 +17,7 @@ export class Movie {
     this.title = title;
     this.category = category;
     this.releaseYear = releaseYear;
+    this.rateAverage = 0;
+    this.voteCount = 0;
   }
 }

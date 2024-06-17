@@ -1,20 +1,35 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Post,
+  ValidationPipe,
+} from '@nestjs/common';
 import { MovieService } from '../service/movie.service';
 import { MovieVo } from '../vo';
-import { Movie } from '../entities/movie.entity';
-import { CreateMovieDto } from '../dto';
+import { AddRaitingDto, CreateMovieDto } from '../dto';
 
 @Controller('/api/movies')
 export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
   @Get()
-  findAll(): Movie[] {
+  findAll(): MovieVo[] {
     const movies = this.movieService.findAll();
 
     return movies.map(
       (movie) =>
-        new MovieVo(movie.id, movie.title, movie.category, movie.releaseYear),
+        new MovieVo(
+          movie.id,
+          movie.title,
+          movie.category,
+          movie.releaseYear,
+          movie.rateAverage,
+          movie.voteCount,
+        ),
     );
   }
 
@@ -27,6 +42,8 @@ export class MovieController {
       savedMovie.title,
       savedMovie.category,
       savedMovie.releaseYear,
+      savedMovie.rateAverage,
+      savedMovie.voteCount,
     );
   }
 
@@ -35,7 +52,7 @@ export class MovieController {
     const findMovie = this.movieService.findById(id);
 
     if (!findMovie) {
-      throw new NotFoundException(`There is not a registered movie with id: ${id}`);
+      throw new NotFoundException('The request movie ID does not exist');
     }
 
     return new MovieVo(
@@ -43,6 +60,29 @@ export class MovieController {
       findMovie.title,
       findMovie.category,
       findMovie.releaseYear,
+      findMovie.rateAverage,
+      findMovie.voteCount,
+    );
+  }
+
+  @Post(':id/raiting')
+  addRaiting(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() addRaitingDto: AddRaitingDto,
+  ) {
+    const movie = this.movieService.addRaiting(id, addRaitingDto.value);
+
+    if (!movie) {
+      throw new NotFoundException('The request movie ID does not exist');
+    }
+
+    return new MovieVo(
+      movie.id,
+      movie.title,
+      movie.category,
+      movie.releaseYear,
+      movie.rateAverage,
+      movie.voteCount,
     );
   }
 }
