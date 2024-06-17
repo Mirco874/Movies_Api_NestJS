@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, ValidationPipe } from '@nestjs/common';
 import { MovieService } from '../service/movie.service';
 import { MovieVo } from '../vo';
 import { Movie } from '../entities/movie.entity';
@@ -27,6 +27,18 @@ export class MovieController {
       savedMovie.title,
       savedMovie.category,
       savedMovie.releaseYear,
+    );
+  }
+
+  @Get(':id')
+  findById(@Param('id') id: number) {
+    const findMovie = this.movieService.findById(id);
+
+    return new MovieVo(
+      findMovie.id,
+      findMovie.title,
+      findMovie.category,
+      findMovie.releaseYear,
     );
   }
 }

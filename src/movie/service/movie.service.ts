@@ -25,4 +25,12 @@ export class MovieService {
     savedMovies.push(newMovie);
     return newMovie;
   }
+
+  findById(id: number) {
+    const movie = savedMovies.find((movie) => movie.id === id);
+    if (typeof movie === 'undefined') {
+      return null;
+    }
+    return movie;
+  }
 }
