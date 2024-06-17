@@ -7,7 +7,7 @@ const INVALID_VALUE_MSG =
 export class AddRaitingDto {
   @IsNumber()
   @IsNotEmpty({ message: EMPTY_VALUE_MSG })
-  @Min(0, { message: INVALID_VALUE_MSG })
+  @Min(1, { message: INVALID_VALUE_MSG })
   @Max(5, { message: INVALID_VALUE_MSG })
   value: number;
 }
