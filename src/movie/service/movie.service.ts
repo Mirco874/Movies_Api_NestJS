@@ -1,54 +1,64 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { movies } from '../data/movies';
 import { CreateMovieDto } from '../dto';
 import { Movie } from '../entities/movie.entity';
+import { PrismaClient } from '@prisma/client';
 
 const savedMovies = movies;
 
 @Injectable()
-export class MovieService {
-  findAll(): Movie[] {
-    const movies: Movie[] = savedMovies;
+export class MovieService extends PrismaClient implements OnModuleInit {
+
+  logger = new Logger("MovieService");
+
+  async onModuleInit() {
+    await this.$connect();
+    this.logger.log('MovieService initialized');
+  }
+
+  findAll(): Promise<Movie[]> {
+    const movies = this.movie.findMany();
     return movies;
   }
 
-  persist(createMovieDto: CreateMovieDto): Movie {
-    const calculatedId = savedMovies.length + 1;
+  persist(createMovieDto: CreateMovieDto): Promise<Movie> {
+    const savedMovie = this.movie.create({
+      data: {
+        title: createMovieDto.title,
+        category: createMovieDto.category,
+        releaseYear: createMovieDto.releaseYear,
+        rateAverage: 0,
+        voteCount: 0,
+      },
+    });
 
-    const newMovie = new Movie(
-      calculatedId,
-      createMovieDto.title,
-      createMovieDto.category,
-      createMovieDto.releaseYear,
-    );
-
-    savedMovies.push(newMovie);
-    return newMovie;
+    return savedMovie;
   }
 
-  findById(id: number): Movie {
-    const movie = savedMovies.find((movie) => movie.id === id);
-
-    if (typeof movie === 'undefined') {
-      return null;
-    }
-    return movie;
+  findById(id: number): Promise<Movie> {
+    return this.movie.findUnique({ 
+      where: { id }
+    })
   }
 
-  addRaiting(id: number, raitingValue: number): Movie {
-    const findMovie: Movie = this.findById(id);
+  async addRaiting(id: number, raitingValue: number): Promise<Movie> {
+    const findMovie: Movie = await this.findById(id);
 
     if (!findMovie) {
-      return null;
+      throw new Error('The request movie ID does not exist');
     }
 
-    const rankingUpdated =
-      findMovie.rateAverage * findMovie.voteCount + raitingValue;
+    const rankingUpdated =findMovie.rateAverage * findMovie.voteCount + raitingValue;
     const voteCountUpdated = findMovie.voteCount + 1;
 
-    findMovie.rateAverage = rankingUpdated / voteCountUpdated;
-    findMovie.voteCount = voteCountUpdated;
+    const updatedMovie = this.movie.update({
+      where: { id },
+      data: {
+        rateAverage: rankingUpdated / voteCountUpdated,
+        voteCount: voteCountUpdated,
+      },
+    });
 
-    return findMovie;
+    return updatedMovie;
   }
 }

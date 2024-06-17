@@ -17,8 +17,8 @@ export class MovieController {
   constructor(private readonly movieService: MovieService) {}
 
   @Get()
-  findAll(): MovieVo[] {
-    const movies = this.movieService.findAll();
+  async findAll(): Promise<MovieVo[]> {
+    const movies = await this.movieService.findAll();
 
     return movies.map(
       (movie) =>
@@ -34,8 +34,8 @@ export class MovieController {
   }
 
   @Post()
-  register(@Body(ValidationPipe) createMovieDto: CreateMovieDto): MovieVo {
-    const savedMovie = this.movieService.persist(createMovieDto);
+  async register(@Body(ValidationPipe) createMovieDto: CreateMovieDto): Promise<MovieVo> {
+    const savedMovie = await this.movieService.persist(createMovieDto);
 
     return new MovieVo(
       savedMovie.id,
@@ -48,8 +48,8 @@ export class MovieController {
   }
 
   @Get(':id')
-  findById(@Param('id', ParseIntPipe) id: number) {
-    const findMovie = this.movieService.findById(id);
+  async findById(@Param('id', ParseIntPipe) id: number): Promise<MovieVo> {
+    const findMovie = await this.movieService.findById(id);
 
     if (!findMovie) {
       throw new NotFoundException('The request movie ID does not exist');
@@ -66,23 +66,26 @@ export class MovieController {
   }
 
   @Post(':id/raiting')
-  addRaiting(
+  async addRaiting(
     @Param('id', ParseIntPipe) id: number,
     @Body() addRaitingDto: AddRaitingDto,
-  ) {
-    const movie = this.movieService.addRaiting(id, addRaitingDto.value);
-
-    if (!movie) {
-      throw new NotFoundException('The request movie ID does not exist');
+  ): Promise<MovieVo> {
+    try {
+      const movie = await this.movieService.addRaiting(id, addRaitingDto.value);
+      
+      return new MovieVo(
+        movie.id,
+        movie.title,
+        movie.category,
+        movie.releaseYear,
+        movie.rateAverage,
+        movie.voteCount,
+      );
+    } catch (error) {
+      throw new NotFoundException(error.message);
     }
 
-    return new MovieVo(
-      movie.id,
-      movie.title,
-      movie.category,
-      movie.releaseYear,
-      movie.rateAverage,
-      movie.voteCount,
-    );
+
+
   }
 }

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Movie" ALTER COLUMN "rateAverage" DROP NOT NULL,
+ALTER COLUMN "voteCount" DROP NOT NULL;
