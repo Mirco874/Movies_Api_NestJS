@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, ValidationPipe } from '@nestjs/common';
 import { MovieService } from '../service/movie.service';
 import { MovieVo } from '../vo';
 import { Movie } from '../entities/movie.entity';
@@ -31,8 +31,12 @@ export class MovieController {
   }
 
   @Get(':id')
-  findById(@Param('id') id: number) {
+  findById(@Param('id', ParseIntPipe) id: number) {
     const findMovie = this.movieService.findById(id);
+
+    if (!findMovie) {
+      throw new NotFoundException(`There is not a registered movie with id: ${id}`);
+    }
 
     return new MovieVo(
       findMovie.id,
