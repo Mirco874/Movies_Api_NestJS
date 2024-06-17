@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { movies } from './data/movies';
-import { CreateMovieDto } from './dto';
-import { Movie } from './entities/movie.entity';
+import { movies } from '../data/movies';
+import { CreateMovieDto } from '../dto';
+import { Movie } from '../entities/movie.entity';
 
 const savedMovies = movies;
 
